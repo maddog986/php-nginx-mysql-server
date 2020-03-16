@@ -1,0 +1,23 @@
+; Redirect errors to the container stderr
+error_log = "/dev/stderr"
+
+; Make sure _ENV is populated to use it in wp-config.php
+; variables_order = "EGPCS"
+
+; Hide PHP version info in response headers
+expose_php = {{ default .Env.PHP_EXPOSE "Off" }}
+
+; Up the upload limit
+post_max_size = {{ default .Env.PHP_POST_MAX_SIZE "8M" }}
+upload_max_filesize = {{ default .Env.PHP_UPLOAD_MAX_FILESIZE "50M" }}
+
+; Display errors
+display_errors = {{ default .Env.PHP_DISPLAY_ERRORS "on" }}
+error_reporting = {{ default .Env.PHP_ERROR_REPORTING "E_ALL" }}
+
+; Disable safe mode for development
+safe_mode = {{ default .Env.PHP_SAFE_MODE "Off" }}
+
+[Date]
+; Set default timezone, you can configure the timezone in Wordpress
+date.timezone = {{ default .Env.PHP_TIMEZONE "UTC" }}
