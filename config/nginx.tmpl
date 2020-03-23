@@ -1,4 +1,5 @@
 worker_processes  1;
+error_log stderr warn;
 pid /run/nginx.pid;
 
 events {
@@ -95,8 +96,8 @@ http {
             fastcgi_buffers 4 256k;
             fastcgi_busy_buffers_size 256k;
 
-            fastcgi_index index.php;
             fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
 
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
             include fastcgi_params;
@@ -105,10 +106,40 @@ http {
             fastcgi_param HTTPS $forwarded_scheme;
         }
 
+        # phpmyadmin
+        location /phpmyadmin {
+            root /var/;
+            index index.php index.html index.htm;
+            location ~ ^/phpmyadmin/(.+\.php)$ {
+                try_files $uri =404;
+                root /var/;
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_index index.php;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+                # Forward the scheme from upstream
+                fastcgi_param HTTPS $forwarded_scheme;
+            }
+
+            location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+                root /var/;
+            }
+        }
+
         # deny access to . files, for security
         location ~ /\. {
             log_not_found off;
             deny all;
+        }
+
+        # Allow fpm ping and status from localhost
+        location ~ ^/(fpm-status|fpm-ping)$ {
+            access_log off;
+            allow 127.0.0.1;
+            deny all;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
         }
     }
 }

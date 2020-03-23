@@ -33,12 +33,18 @@ echo "done."
     if [ -n "${PHPMYADMIN_VERSION}" ]; then
         echo "Downloading phpmyadmin from: https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VERSION}/phpMyAdmin-${PHPMYADMIN_VERSION}-english.tar.gz"
         curl -o /tmp/phpmyadmin.tar.gz -fSL "https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VERSION}/phpMyAdmin-${PHPMYADMIN_VERSION}-english.tar.gz"
-        mkdir -p /tmp/phpmyadmin
+        mkdir -p /tmp/phpmyadmin /var/phpmyadmin/ /var/phpmyadmin/tmp
         tar -xzf /tmp/phpmyadmin.tar.gz -C /tmp/phpmyadmin/
-        mkdir -p /var/www/phpmyadmin/
-        cp -rf /tmp/phpmyadmin/phpMyAdmin-${PHPMYADMIN_VERSION}-english/* /var/www/phpmyadmin/
+        cp -rf /tmp/phpmyadmin/phpMyAdmin-${PHPMYADMIN_VERSION}-english/* /var/phpmyadmin/
         rm -rf /tmp/phpmyadmin /tmp/phpmyadmin.tar.gz
         echo "done."
+
+        # set blowfish_secret
+        randomBlowfishSecret=$(openssl rand -base64 32)
+        sed -e "s|cfg\['blowfish_secret'\] = ''|cfg['blowfish_secret'] = '$randomBlowfishSecret'|" /var/phpmyadmin/config.sample.inc.php >/var/phpmyadmin/config.inc.php
+
+        # fix permissions for folders
+        chown -R nobody:nobody /var/phpmyadmin
     fi
 
     # download wordpress if a version is passed in
@@ -74,8 +80,12 @@ echo "done."
             rm -rf ${BACKUP_EXCLUDE}
         fi
 
+        # move sql files
+        mv /tmp/site/*.sql /var/db/
+
         cp -rf /tmp/site/* /var/www/
         rm -rf /tmp/site.zip /tmp/site
+
         echo "done."
 
         # tell nginx to reload config incase a conf is added
@@ -83,8 +93,9 @@ echo "done."
     fi
 
     # fix permissions for folders
-    chown -R nobody:nobody /var/www
+    chown -R www-data:www-data /var/www
     chown -R mysql:mysql /var/lib/mysql
+    chmod 777 /var/www
 
     # get database creds from existing wp-config.php
     if [ -f /var/www/wp-config.php ]; then
@@ -163,7 +174,7 @@ echo "done."
     fi
 
     # import the .sql scripts if any
-    for f in /var/www/*.sql; do
+    for f in /var/db/*.sql; do
         echo "Importing .SQL file: $f"
         /usr/bin/mysql -u"$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE <"$f"
         echo "SQL File Imported: $f"

@@ -1,14 +1,13 @@
 FROM alpine:latest
 
 LABEL maintainer="Drew Gauderman <drew@hyak.co>" \
-    Description="php/nginx/mysql/server for php websites & WordPress."
+    Description="php/nginx/mysql/server for website development."
 
 ENV HTTP http
 ENV WEBSITE_HOSTNAME website.test
 ENV PHP_EXPOSE Off
 ENV PHP_POST_MAX_SIZE 8M
 ENV PHP_UPLOAD_MAX_FILESIZE 50M
-ENV PHP_SAFE_MODE Off
 ENV PHP_DISPLAY_ERRORS On
 ENV PHP_ERROR_REPORTING E_ALL
 ENV PHP_TIMEZONE UTC
@@ -46,9 +45,6 @@ COPY config/sshd_config /etc/ssh/
 COPY config/my.cnf /etc/my.cnf
 RUN chmod 0444 /etc/my.cnf
 
-# Copy www over
-COPY ./www/ /var/www
-
 # install required software
 RUN set -ex;\
     apk add --no-cache \
@@ -62,6 +58,7 @@ RUN set -ex;\
     mariadb-client \
     openssh \
     openssl \
+    openrc \
     # php install & extentions
     php7 \
     php7-fpm \
@@ -78,10 +75,24 @@ RUN set -ex;\
     php7-openssl \
     php7-imagick \
     php7-session \
+    php7-pdo \
+    php7-pdo_mysql \
+    php7-curl \
+    php7-gd \
+    php7-zlib \
+    php7-phar \
     php7-zip; \
     # azure ssh configure
     echo "root:Docker!" | chpasswd;\
-    ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa;
+    ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa;\
+    # setup folders
+    rm -rf /var/www /var/db && mkdir /var/db/ /var/www/;\
+    # setup test file
+    echo "<?php phpinfo();" > /var/www/index.php;
+
+# ensure www-data user exists
+RUN addgroup -g 82 -S www-data; \
+    adduser -u 82 -D -S -G www-data www-data
 
 # install Dockerize: https://github.com/jwilder/dockerize
 ENV DOCKERIZE_VERSION v0.6.1
@@ -96,4 +107,4 @@ EXPOSE 80 2222 3306
 ENTRYPOINT [ "/etc/entrypoint.sh" ]
 
 # Configure a healthcheck to validate that everything is up & running
-HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1/index.php
+HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1/fpm-ping

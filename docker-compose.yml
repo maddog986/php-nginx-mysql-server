@@ -3,18 +3,12 @@ version: "2"
 services:
   test-server:
     build: .
-    image: php-nginx-mysql-server:latest
+    image: maddog986/php-nginx-mysql-server:latest
     container_name: test-server
-    #environment:
-    # - PHPMYADMIN_VERSION=4.9.4
-    # - WORDPRESS_VERSION=5.2.3
-    # - BACKUP_USERNAME=
-    # - BACKUP_PASSWORD=
-    # - BACKUP_SITE_DOWNLOAD=
-    volumes:
-      - ./www:/var/www
     ports:
       - 80:80
       - 3306:3306
       - 2222:2222
     restart: unless-stopped
+    environment:
+      - PHPMYADMIN_VERSION=4.9.4
