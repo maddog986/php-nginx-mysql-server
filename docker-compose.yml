@@ -6,9 +6,12 @@ services:
     image: maddog986/php-nginx-mysql-server:latest
     container_name: test-server
     ports:
-      - 80:80
-      - 3306:3306
-      - 2222:2222
+      - 8081:80
     restart: unless-stopped
     environment:
-      - PHPMYADMIN_VERSION=4.9.4
+      - WEBSITE_HOSTNAME=localhost:8081
+      # - WORDPRESS_INSTALL=true
+      # - WORDPRESS_TITLE=WordPress
+      # - WORDPRESS_ADMIN_USERNAME=admin
+      # - WORDPRESS_ADMIN_PASSWORD=admin
+      # - WORDPRESS_ADMIN_EMAIL=drew@dpg.host

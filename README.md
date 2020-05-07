@@ -25,6 +25,13 @@ This one container setups [MariaDB](https://mariadb.com/) (MySQL), [NGINX](https
 - **MYSQL_DATABASE**: Database name to create in MySQL. If importing from a ZIP that contains wp_config.php, this is pulled from the config file.
 - **MYSQL_USERNAME**: Username to create for the MySQL Database. If importing from a ZIP that contains wp_config.php, this is pulled from the config file.
 - **MYSQL_PASSWORD**: Password to create for the MySQL Database. If importing from a ZIP that contains wp_config.php, this is pulled from the config file.
+- **WORDPRESS_INSTALL_CLI**: Install WordPress via CLI. Addtional Options:
+  - **WORDPRESS_TITLE**: The site Title. Optional.
+  - **WORDPRESS_ADMIN_USERNAME**: Installs WordPress using CLI and setups the admin account username.
+  - **WORDPRESS_ADMIN_PASSWORD**: Installs WordPress using CLI and setups the admin account username. WORDPRESS_SETUP_USERNAME is required.
+  - **WORDPRESS_ADMIN_EMAIL**: Installs WordPress using CLI and setups the admin account username. WORDPRESS_SETUP_USERNAME is required.
+  - **WORDPRESS_INSTALL_THEME**: Theme name to activate upon setup.
+  - **WORDPRESS_INSTALL_PLUGIN**: Plugin name to activate upon setup.
 
 ### BACKUP_SITE_DOWNLOAD
 

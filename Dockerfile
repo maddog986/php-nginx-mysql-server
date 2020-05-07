@@ -61,6 +61,8 @@ RUN set -ex;\
     openrc \
     # php install & extentions
     php7 \
+    php7-common \
+    php7-tokenizer \
     php7-fpm \
     php7-json \
     php7-xml \
@@ -88,11 +90,10 @@ RUN set -ex;\
     # setup folders
     rm -rf /var/www /var/db && mkdir /var/db/ /var/www/;\
     # setup test file
-    echo "<?php phpinfo();" > /var/www/index.php;
-
-# ensure www-data user exists
-RUN addgroup -g 82 -S www-data; \
-    adduser -u 82 -D -S -G www-data www-data
+    echo "<?php phpinfo();" > /var/www/index.php;\
+    # ensure www-data user exists
+    # addgroup -g 82 -S www-data; \
+    adduser -u 82 -D -S -G www-data www-data;
 
 # install Dockerize: https://github.com/jwilder/dockerize
 ENV DOCKERIZE_VERSION v0.6.1
