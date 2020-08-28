@@ -197,7 +197,10 @@ EOF
                 wp config set FORCE_SSL_ADMIN false  --raw --path=/var/www
             fi
 
-            wp config set COOKIE_DOMAIN $WEBSITE_HOSTNAME --path=/var/www
+            # remove port from website url
+            COOKIE_DOMAIN="$(echo $WEBSITE_HOSTNAME | sed 's~:[[:digit:]]\+~~g')"
+
+            wp config set COOKIE_DOMAIN $COOKIE_DOMAIN --path=/var/www
 
             wp option update siteurl "$URL" --path=/var/www
             wp option update home "$URL" --path=/var/www
