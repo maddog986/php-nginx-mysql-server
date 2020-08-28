@@ -6,7 +6,7 @@ services:
     image: maddog986/php-nginx-mysql-server:latest
     container_name: test-server
     ports:
-      - 8081:80
+      - 8080:80
     restart: unless-stopped
     environment:
       - WEBSITE_HOSTNAME=localhost:8081
