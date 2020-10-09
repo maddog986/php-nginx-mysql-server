@@ -62,6 +62,7 @@ RUN set -ex;\
     # php install & extentions
     php7 \
     php7-common \
+    php7-dev \
     php7-tokenizer \
     php7-fpm \
     php7-json \
@@ -75,6 +76,7 @@ RUN set -ex;\
     php7-mbstring \
     php7-mysqli \
     php7-openssl \
+    php7-pear \
     php7-imagick \
     php7-session \
     php7-pdo \
@@ -93,13 +95,18 @@ RUN set -ex;\
     echo "<?php phpinfo();" > /var/www/index.php;\
     # ensure www-data user exists
     # addgroup -g 82 -S www-data; \
-    adduser -u 82 -D -S -G www-data www-data;
+    adduser -u 82 -D -S -G www-data www-data;\
+    # php sessions
+    mkdir /var/lib/php7/session;\
+    chmod -R 777 /var/lib/php7/session;\
+    # setup ngnix pid file
+    mkdir -p /run/nginx;
 
 # install Dockerize: https://github.com/jwilder/dockerize
-ENV DOCKERIZE_VERSION v0.6.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+ENV DOCKERIZE_VERSION 0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/v$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-v$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-v$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-alpine-linux-amd64-v$DOCKERIZE_VERSION.tar.gz
 
 WORKDIR /var/www/
 

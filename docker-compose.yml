@@ -1,17 +1,24 @@
-version: "2"
+version: "3"
 
 services:
-  test-server:
+  test-php-server:
     build: .
     image: maddog986/php-nginx-mysql-server:latest
-    container_name: test-server
+    container_name: test-php-server
     ports:
-      - 8080:80
+      - 8081:80
+      - 3306:3306
     restart: unless-stopped
     environment:
       - WEBSITE_HOSTNAME=localhost:8081
-      # - WORDPRESS_INSTALL=true
-      # - WORDPRESS_TITLE=WordPress
-      # - WORDPRESS_ADMIN_USERNAME=admin
-      # - WORDPRESS_ADMIN_PASSWORD=admin
-      # - WORDPRESS_ADMIN_EMAIL=drew@dpg.host
+
+  test-wordpress-server:
+    build: .
+    image: maddog986/php-nginx-mysql-server:latest
+    container_name: test-wordpress-server
+    ports:
+      - 8082:80
+    restart: unless-stopped
+    environment:
+      - WEBSITE_HOSTNAME=localhost:8082
+      - WORDPRESS_INSTALL=true
