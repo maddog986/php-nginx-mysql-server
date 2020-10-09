@@ -29,16 +29,18 @@ See other projects using this:
 - **PHPMYADMIN_VERSION**: Version of PHPMyAdmin to install. Optional. If not supplied, its not installed.
 
 - **WORDPRESS_INSTALL**: Default: false. If true, WordPress will be installed. Set WORDPRESS_VERSION for specific version, or "latest" version is installed.
+
   - **WORDPRESS_TITLE**: Default: WordPress. The Wordpress Site Title. For new installs only. Optional.
   - **WORDPRESS_VERSION**: Version of Wordpress to install to root www folder.
   - **WORDPRESS_ADMIN_USERNAME**: Installs WordPress using CLI and setups the admin account username. For new installs only.
   - **WORDPRESS_ADMIN_PASSWORD**: Installs WordPress using CLI and setups the admin account username. WORDPRESS_SETUP_USERNAME is required. For new installs only.
-- **WORDPRESS_ADMIN_EMAIL**: Sets Admin email for existing and new installs.
-
-- **WORDPRESS_ADMIN_EMAIL**: Installs WordPress using CLI and setups the admin account username. WORDPRESS_SETUP_USERNAME is required.
-- **WORDPRESS_INSTALL_THEME**: Theme name to activate upon setup.
-- **WORDPRESS_INSTALL_PLUGIN**: Plugin name to activate upon setup.
-- **WORDPRESS_TBLPREFIX**: Table prefix to use from wp_config.php. Used to automatically update the website url in the "options" table.'
+  - **WORDPRESS_ADMIN_EMAIL**: Sets Admin email for existing and new installs.
+  - **WORDPRESS_INSTALL_THEME**: Theme name to install and activate.
+  - **WORDPRESS_ACTIVATE_THEME**: Theme to activate and activate.
+  - **WORDPRESS_INSTALL_PLUGIN**: Plugin name to install.
+  - **WORDPRESS_ACTIVATE_PLUGIN**: Plugin name to activate.
+  - **WORDPRESS_DEACTIVATE_PLUGIN**: Plugin to deactivate.
+  - **WORDPRESS_TBLPREFIX**: Table prefix to use from wp_config.php. Used to automatically update the website url in the "options" table.'
 
 - **BACKUP_SITE_DOWNLOAD**: ZIP Folder to download and extract to /var/www folder.
 - **BACKUP_USERNAME**: Optional. Username to connect to \$BACKUP_SITE_DOWNLOAD that is secured via http authentication.

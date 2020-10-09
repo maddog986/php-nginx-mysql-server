@@ -208,11 +208,23 @@ EOF
             fi
 
             if [ -n "${WORDPRESS_INSTALL_THEME}" ]; then
-                wp theme activate $WORDPRESS_INSTALL_THEME --path=/var/www
+                wp theme install $WORDPRESS_INSTALL_THEME --path=/var/www --activate
             fi
 
             if [ -n "${WORDPRESS_INSTALL_PLUGIN}" ]; then
-                wp plugin activate $WORDPRESS_INSTALL_PLUGIN --path=/var/www
+                wp plugin install $WORDPRESS_INSTALL_PLUGIN --path=/var/www --activate
+            fi
+
+            if [ -n "${WORDPRESS_ACTIVATE_THEME}" ]; then
+                wp theme activate $WORDPRESS_ACTIVATE_THEME --path=/var/www
+            fi
+
+            if [ -n "${WORDPRESS_ACTIVATE_PLUGIN}" ]; then
+                wp plugin activate $WORDPRESS_ACTIVATE_PLUGIN --path=/var/www
+            fi
+
+            if [ -n "${WORDPRESS_DEACTIVATE_PLUGIN}" ]; then
+                wp plugin deactivate $WORDPRESS_DEACTIVATE_PLUGIN --path=/var/www
             fi
         fi
 
