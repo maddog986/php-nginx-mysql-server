@@ -123,8 +123,17 @@ EOF
             echo "done."
         fi
 
+        # existing WordPress setup
+        if [ -f /var/www/wp-config.php ]; then
+            echo "Grabing WordPress variables for existing wp-config.php"
+
+            MYSQL_DATABASE=$(wp config get DB_NAME --path=/var/www)
+            MYSQL_USERNAME=$(wp config get DB_USER --path=/var/www)
+            MYSQL_PASSWORD=$(wp config get DB_PASSWORD --path=/var/www)
+            WORDPRESS_TBLPREFIX=$(wp config get table_prefix --path=/var/www)
+
         # new wordpress setup
-        if [ -f /var/www/wp-config-sample.php ]; then
+        elif [ -f /var/www/wp-config-sample.php ]; then
             echo "Setting up new wp-config.php"
 
             # create the config file from sample
@@ -144,15 +153,6 @@ EOF
             WORDPRESS_INSTALL=true
 
             echo "done."
-
-        # change require SSL for WordPress.
-        elif [ -f /var/www/wp-config.php ]; then
-            echo "Grabing WordPress variables for existing wp-config.php"
-
-            MYSQL_DATABASE=$(wp config get DB_NAME --path=/var/www)
-            MYSQL_USERNAME=$(wp config get DB_USER --path=/var/www)
-            MYSQL_PASSWORD=$(wp config get DB_PASSWORD --path=/var/www)
-            WORDPRESS_TBLPREFIX=$(wp config get table_prefix --path=/var/www)
         fi
 
         # create database if one was passed in
