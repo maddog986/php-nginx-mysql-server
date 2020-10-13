@@ -90,7 +90,7 @@ EOF
         # download wordpress if a version is passed in
         if [ -n "${WORDPRESS_VERSION}" ]; then
             echo "Downloading WordPress $WORDPRESS_VERSION"
-            wp core download --version=$WORDPRESS_VERSION --path=/var/www/
+            wp core download --version=$WORDPRESS_VERSION --path=/var/www/ --force
             echo "done."
         fi
 
@@ -132,6 +132,8 @@ EOF
             MYSQL_PASSWORD=$(wp config get DB_PASSWORD --path=/var/www)
             WORDPRESS_TBLPREFIX=$(wp config get table_prefix --path=/var/www)
 
+            echo "done."
+
         # new wordpress setup
         elif [ -f /var/www/wp-config-sample.php ]; then
             echo "Setting up new wp-config.php"
@@ -155,14 +157,19 @@ EOF
             echo "done."
         fi
 
+        # if database isnt created yet, it needs to be installed
+        if [ ! -d "/var/lib/mysql/$MYSQL_DATABASE" ] ; then
+            WORDPRESS_INSTALL=true
+        fi
+
         # create database if one was passed in
         if [ -n "${MYSQL_DATABASE}" ]; then
-            echo "Creating Database: $MYSQL_DATABASE (Username: $MYSQL_USERNAME, Password: $MYSQL_PASSWORD)..."
+            echo "Setting up Database: $MYSQL_DATABASE (Username: $MYSQL_USERNAME, Password: $MYSQL_PASSWORD)..."
 
             # make sure database is setup
             /usr/bin/mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\`;GRANT ALL ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USERNAME'@'%' identified by '$MYSQL_PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;"
 
-            echo "Database Created: $MYSQL_DATABASE"
+            echo "done."
         fi
 
         # import the .sql scripts if any
@@ -174,18 +181,31 @@ EOF
             rm "$f"
         done
 
+        # import the cron scripts if any
+        for f in /var/cron/*; do
+            echo "Importing cron file: $f"
+            crontab $f
+            echo "done."
+        done
+
         # install wordpress
         if [ "${WORDPRESS_INSTALL}" = true ]; then
+            echo "Installing WordPress using WP CLI..."
+
             WORDPRESS_TITLE=${WORDPRESS_TITLE:-WordPress}
             WORDPRESS_ADMIN_USERNAME=${WORDPRESS_ADMIN_USERNAME:-admin}
             WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD:-admin}
             WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL:-"noemail@noemail.com"}
 
             wp core install --url=$WEBSITE_HOSTNAME --title=$WORDPRESS_TITLE --admin_user=$WORDPRESS_ADMIN_USERNAME --admin_password=$WORDPRESS_ADMIN_PASSWORD --admin_email=$WORDPRESS_ADMIN_EMAIL --skip-email --path=/var/www
+
+            echo "done."
         fi
 
         # setup addtional WordPress stuff
         if [ -f /var/www/wp-config.php ]; then
+            echo "Setting up wp-config..."
+
             if [ "$HTTP" == "https" ]; then
                 wp config set FORCE_SSL_ADMIN true  --raw --path=/var/www
             else
@@ -226,6 +246,12 @@ EOF
             if [ -n "${WORDPRESS_DEACTIVATE_PLUGIN}" ]; then
                 wp plugin deactivate $WORDPRESS_DEACTIVATE_PLUGIN --path=/var/www
             fi
+
+            if [ -n "${FS_METHOD}" ]; then
+                wp config set FS_METHOD $FS_METHOD --path=/var/www
+            fi
+
+            echo "done."
         fi
 
         # fix permissions for folders
