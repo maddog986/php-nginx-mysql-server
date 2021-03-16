@@ -91,7 +91,7 @@ EOF
         # download wordpress if a version is passed in
         if [ -n "${WORDPRESS_VERSION}" ]; then
             echo "Downloading WordPress $WORDPRESS_VERSION"
-            wp core download --version=$WORDPRESS_VERSION --path=/var/www/ --force
+            wp core download --version=$WORDPRESS_VERSION --path=$WWW --force
             echo "done."
         fi
 
@@ -106,52 +106,61 @@ EOF
                 curl -o /tmp/site.zip -fSL "$BACKUP_SITE_DOWNLOAD"
             fi
 
-            mkdir -p /var/www /tmp/site
-            unzip -o /tmp/site.zip -d /tmp/site/
+            echo "done."
+
+            mkdir -p $WWW /tmp/site
+
+            echo "Unzipping files to /tmp/site. This may take awhile..."
+            unzip -q -o /tmp/site.zip -d /tmp/site/
+            echo "done."
 
             # exclude files from the backup unzip
             if [ -n "${BACKUP_EXCLUDE}" ]; then
+                echo "Removing unwanted files before transfer."
+
                 cd /tmp/site
                 rm -rf ${BACKUP_EXCLUDE}
+
+                echo "done."
             fi
 
             # move sql files to be imported into MySQL
             mv /tmp/site/*.sql /var/db/
 
-            cp -rf /tmp/site/* /var/www/
+            echo "Copying files to $WWW directory"
+            cp -rf /tmp/site/* $WWW/
             rm -rf /tmp/site.zip /tmp/site
-
             echo "done."
         fi
 
         # existing WordPress setup
-        if [ -f /var/www/wp-config.php ]; then
+        if [ -f $WWW/wp-config.php ]; then
             echo "Grabing WordPress variables for existing wp-config.php"
 
-            MYSQL_DATABASE=$(wp config get DB_NAME --path=/var/www)
-            MYSQL_USERNAME=$(wp config get DB_USER --path=/var/www)
-            MYSQL_PASSWORD=$(wp config get DB_PASSWORD --path=/var/www)
-            WORDPRESS_TBLPREFIX=$(wp config get table_prefix --path=/var/www)
+            MYSQL_DATABASE=$(wp config get DB_NAME --path=$WWW)
+            MYSQL_USERNAME=$(wp config get DB_USER --path=$WWW)
+            MYSQL_PASSWORD=$(wp config get DB_PASSWORD --path=$WWW)
+            WORDPRESS_TBLPREFIX=$(wp config get table_prefix --path=$WWW)
 
             echo "done."
 
         # new wordpress setup
-        elif [ -f /var/www/wp-config-sample.php ]; then
+        elif [ -f $WWW/wp-config-sample.php ]; then
             echo "Setting up new wp-config.php"
 
             # create the config file from sample
-            mv /var/www/wp-config-sample.php /var/www/wp-config.php
+            mv $WWW/wp-config-sample.php $WWW/wp-config.php
 
             MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
             MYSQL_USERNAME=${MYSQL_USERNAME:-wordpress}
 
             # set config values
-            wp config set DB_NAME $MYSQL_DATABASE --path=/var/www
-            wp config set DB_USER $MYSQL_USERNAME --path=/var/www
-            wp config set DB_PASSWORD $MYSQL_PASSWORD --path=/var/www
-            wp config set DB_HOST $MYSQL_HOST --path=/var/www
-            wp config set table_prefix $WORDPRESS_TBLPREFIX --path=/var/www
-            wp config shuffle-salts --path=/var/www
+            wp config set DB_NAME $MYSQL_DATABASE --path=$WWW
+            wp config set DB_USER $MYSQL_USERNAME --path=$WWW
+            wp config set DB_PASSWORD $MYSQL_PASSWORD --path=$WWW
+            wp config set DB_HOST $MYSQL_HOST --path=$WWW
+            wp config set table_prefix $WORDPRESS_TBLPREFIX --path=$WWW
+            wp config shuffle-salts --path=$WWW
 
             WORDPRESS_INSTALL=true
 
@@ -198,77 +207,81 @@ EOF
             WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD:-admin}
             WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL:-"noemail@noemail.com"}
 
-            wp core install --url=$WEBSITE_HOSTNAME --title=$WORDPRESS_TITLE --admin_user=$WORDPRESS_ADMIN_USERNAME --admin_password=$WORDPRESS_ADMIN_PASSWORD --admin_email=$WORDPRESS_ADMIN_EMAIL --skip-email --path=/var/www
+            wp core install --url=$WEBSITE_HOSTNAME --title=$WORDPRESS_TITLE --admin_user=$WORDPRESS_ADMIN_USERNAME --admin_password=$WORDPRESS_ADMIN_PASSWORD --admin_email=$WORDPRESS_ADMIN_EMAIL --skip-email --path=$WWW
 
             echo "done."
         fi
 
         # setup addtional WordPress stuff
-        if [ -f /var/www/wp-config.php ]; then
+        if [ -f $WWW/wp-config.php ]; then
             echo "Setting up wp-config..."
 
             if [ "$HTTP" == "https" ]; then
-                wp config set FORCE_SSL_ADMIN true  --raw --path=/var/www
+                wp config set FORCE_SSL_ADMIN true  --raw --path=$WWW
             else
-                wp config set FORCE_SSL_ADMIN false  --raw --path=/var/www
+                wp config set FORCE_SSL_ADMIN false  --raw --path=$WWW
             fi
 
             # remove port from website url
             COOKIE_DOMAIN="$(echo $WEBSITE_HOSTNAME | sed 's~:[[:digit:]]\+~~g')"
 
-            wp config set COOKIE_DOMAIN $COOKIE_DOMAIN --path=/var/www
+            wp config set COOKIE_DOMAIN $COOKIE_DOMAIN --path=$WWW
 
-            wp option update siteurl "$URL" --path=/var/www
-            wp option update home "$URL" --path=/var/www
+            wp option update siteurl "$URL" --path=$WWW
+            wp option update home "$URL" --path=$WWW
 
             # make sure database is updated
-            wp core update-db --path=/var/www
+            wp core update-db --path=$WWW
 
             if [ -n "${WORDPRESS_ADMIN_EMAIL}" ]; then
-                wp option update admin_email $WORDPRESS_ADMIN_EMAIL --path=/var/www
+                wp option update admin_email $WORDPRESS_ADMIN_EMAIL --path=$WWW
             fi
 
             if [ -n "${WORDPRESS_INSTALL_THEME}" ]; then
-                wp theme install $WORDPRESS_INSTALL_THEME --path=/var/www --activate
+                wp theme install $WORDPRESS_INSTALL_THEME --path=$WWW --activate
             fi
 
             if [ -n "${WORDPRESS_INSTALL_PLUGIN}" ]; then
-                wp plugin install $WORDPRESS_INSTALL_PLUGIN --path=/var/www --activate
+                wp plugin install $WORDPRESS_INSTALL_PLUGIN --path=$WWW --activate
             fi
 
             if [ -n "${WORDPRESS_ACTIVATE_THEME}" ]; then
-                wp theme activate $WORDPRESS_ACTIVATE_THEME --path=/var/www
+                wp theme activate $WORDPRESS_ACTIVATE_THEME --path=$WWW
             fi
 
             if [ -n "${WORDPRESS_ACTIVATE_PLUGIN}" ]; then
-                wp plugin activate $WORDPRESS_ACTIVATE_PLUGIN --path=/var/www
+                wp plugin activate $WORDPRESS_ACTIVATE_PLUGIN --path=$WWW
             fi
 
             if [ -n "${WORDPRESS_DEACTIVATE_PLUGIN}" ]; then
-                wp plugin deactivate $WORDPRESS_DEACTIVATE_PLUGIN --path=/var/www
+                wp plugin deactivate $WORDPRESS_DEACTIVATE_PLUGIN --path=$WWW
             fi
 
             if [ -n "${FS_METHOD}" ]; then
-                wp config set FS_METHOD $FS_METHOD --path=/var/www
+                wp config set FS_METHOD $FS_METHOD --path=$WWW
             fi
 
             if [ "${WORDPRESS_DYNAMIC_URL}" = true ]; then
-                wp config set WP_HOME "'http://' . \$_SERVER['HTTP_HOST']" --path=/var/www --raw
-                wp config set WP_SITEURL "'http://' . \$_SERVER['HTTP_HOST']" --path=/var/www --raw
+                wp config set WP_HOME "'http://' . \$_SERVER['HTTP_HOST']" --path=$WWW --raw
+                wp config set WP_SITEURL "'http://' . \$_SERVER['HTTP_HOST']" --path=$WWW --raw
             fi
 
             echo "done."
         fi
 
+        echo "Changing folder $WWW permissions to www-data user..."
+
         # fix permissions for folders
-        chown -R www-data:www-data /var/www
+        chown -R www-data:www-data $WWW
         chown -R mysql:mysql /var/lib/mysql
-        chmod 777 /var/www
+        chmod 777 $WWW
 
         chown -R www-data:www-data /var/lib/php7/session
 
         # tell nginx to reload config incase a conf is added
         nginx -s reload
+
+        echo "done."
 
         echo "Scripts all done. Site should be ready: $URL"
 

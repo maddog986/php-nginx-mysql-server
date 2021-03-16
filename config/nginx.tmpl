@@ -51,7 +51,7 @@ http {
         client_max_body_size 50m;
         client_body_buffer_size 128k;
 
-        root /var/www;
+        root {{ default .Env.WWW "/var/www" }};
         index index.php;
 
         # redirect server error pages to the static page /50x.html
@@ -71,11 +71,11 @@ http {
         }
 
         # custom rules in www import
-        include    /var/www/*.conf;
+        include    {{ default .Env.WWW "/var/www" }}/*.conf;
 
         # Based on https://codeable.io/wordpress-developers-intro-to-docker-part-two/
         location /wp-content {
-            root /var/www;
+            root {{ default .Env.WWW "/var/www" }};
             expires 7d;
             add_header Cache-Control "public";
         }

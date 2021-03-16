@@ -10,6 +10,8 @@ See other projects using this:
 - [WordPress Start Plugin - React](https://github.com/maddog986/wordpress-react-plugin-typescript-starter)
 - [WordPress Starter Theme - React Typescript](https://github.com/maddog986/wordpress-react-theme-typescript-starter)
 
+v1.1.0
+
 ### Notes
 
 \*.conf files within the root www folder will automatically be included in ngnix upon container first boot only. These files can extend the site settings.
@@ -18,6 +20,7 @@ See other projects using this:
 
 ## Environment Variables:
 
+- **WWW**: The folder path to serve files. Default: /var/www
 - **WEBSITE_HOSTNAME**: The website URL, example: website.test
 - **HTTP**: http or https. Default: http
 

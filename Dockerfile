@@ -11,6 +11,7 @@ ENV PHP_UPLOAD_MAX_FILESIZE 50M
 ENV PHP_DISPLAY_ERRORS On
 ENV PHP_ERROR_REPORTING E_ALL
 ENV PHP_TIMEZONE UTC
+ENV WWW $WWW
 
 #ENV PHPMYADMIN_VERSION=
 #ENV MYSQL_ROOT_PASSWORD=
@@ -90,9 +91,9 @@ RUN set -ex;\
     echo "root:Docker!" | chpasswd;\
     ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa;\
     # setup folders
-    rm -rf /var/www /var/db && mkdir /var/db/ /var/www/;\
+    rm -rf $WWW /var/db && mkdir /var/db/ $WWW/;\
     # setup test file
-    echo "<?php phpinfo();" > /var/www/index.php;\
+    echo "<?php phpinfo();" > $WWW/index.php;\
     # ensure www-data user exists
     # addgroup -g 82 -S www-data; \
     adduser -u 82 -D -S -G www-data www-data;\
@@ -108,7 +109,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/v$DOCKERIZE_VERS
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-v$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-v$DOCKERIZE_VERSION.tar.gz
 
-WORKDIR /var/www/
+WORKDIR $WWW
 
 EXPOSE 80 2222 3306
 
