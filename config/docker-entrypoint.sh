@@ -9,6 +9,7 @@ URL="$HTTP://$WEBSITE_HOSTNAME"
 MYSQL_HOST=${MYSQL_HOST:-localhost:3306}
 WORDPRESS_TBLPREFIX=${WORDPRESS_TBLPREFIX:-wp_}
 WORDPRESS_INSTALL=${WORDPRESS_INSTALL:-false}
+WORDPRESS_DYNAMIC_URL=${WORDPRESS_DYNAMIC_URL:-false}
 
 # random database password if it isnt set
 if [[ -z "${MYSQL_PASSWORD}" ]]; then
@@ -249,6 +250,11 @@ EOF
 
             if [ -n "${FS_METHOD}" ]; then
                 wp config set FS_METHOD $FS_METHOD --path=/var/www
+            fi
+
+            if [ "${WORDPRESS_DYNAMIC_URL}" = true ]; then
+                wp config set WP_HOME "'http://' . \$_SERVER['HTTP_HOST']" --path=/var/www --raw
+                wp config set WP_SITEURL "'http://' . \$_SERVER['HTTP_HOST']" --path=/var/www --raw
             fi
 
             echo "done."
